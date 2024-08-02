@@ -7,7 +7,6 @@ import type { DocumentContext } from "next/document";
 const MyDocument = () => (
     <Html lang="vi">
         <Head>
-            <title>Admin Shara App</title>
             <link
                 rel="stylesheet"
                 href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"

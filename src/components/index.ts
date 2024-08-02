@@ -1,2 +1,3 @@
 import SiderComponent from "./SiderComponent";
-export { SiderComponent };
+import ImagePicker from "./ImagePicker";
+export { SiderComponent, ImagePicker };
