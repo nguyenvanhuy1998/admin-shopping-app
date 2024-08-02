@@ -4,42 +4,50 @@ import { handleResize } from "./resizeImage";
 import { fs, storage } from "@/firebase/firebaseConfig";
 import { arrayUnion, doc, updateDoc } from "firebase/firestore";
 
+interface FileHandle {
+    files: FileList;
+    id: string;
+    collectionName: string;
+}
 export class HandleFile {
-    static HandleFiles = (files: any, id: string, collectionName: string) => {
-        const items: any[] = [];
+    static handleFiles = ({ files, id, collectionName }: FileHandle) => {
+        const newFiles: File[] = [];
         for (const i in files) {
             if (Object.prototype.hasOwnProperty.call(files, i)) {
                 const element = files[i];
                 if (element.size && element.size > 0) {
-                    items.push(element);
+                    newFiles.push(element);
                 }
             }
         }
-        console.log({ items });
-
-        items.forEach(async (item) => {
-            const newFile = await handleResize(item);
-            console.log({ newFile });
-            this.UploadToStore(newFile, id, collectionName);
+        newFiles.forEach(async (file) => {
+            const newFile = await handleResize(file);
+            this.uploadToStore({
+                file: newFile,
+                id,
+                collectionName,
+            });
         });
     };
-    static UploadToStore = async (
-        file: any,
-        id: string,
-        collectionName: string
-    ) => {
+    static uploadToStore = async ({
+        file,
+        id,
+        collectionName,
+    }: {
+        file: File;
+        id: string;
+        collectionName: string;
+    }) => {
         const fileName = replaceName(file.name);
         const path = `/images/${fileName}`;
         const storageRef = ref(storage, path);
-        console.log({ fileName, path, storageRef });
 
-        // Upload file to fire storage
+        //  Upload file to STORAGE
         const res = await uploadBytes(storageRef, file);
         if (res) {
             if (res.metadata.size === file.size) {
                 // get url from storage
                 const url = await getDownloadURL(storageRef);
-                console.log({ url });
                 // Save url and path to firestore database
                 this.SaveURLToFireStoreDB({
                     url,
@@ -71,7 +79,6 @@ export class HandleFile {
                     path,
                     url,
                 }),
-                imageUrl: url,
             });
         } catch (error) {
             console.log("Save URL to firestore database error", error);

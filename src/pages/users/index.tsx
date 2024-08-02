@@ -1,10 +1,10 @@
 import { collectionNames } from "@/constants/collectionNames";
 import { fs } from "@/firebase/firebaseConfig";
-import { User } from "@/models/User";
+import { User } from "@/models";
 import { Button, Space } from "antd";
 import Table, { ColumnProps } from "antd/es/table";
 import { collection, onSnapshot } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { BiTrash } from "react-icons/bi";
 
 const Users = () => {
@@ -44,7 +44,7 @@ const Users = () => {
             key: "btn",
             title: "",
             dataIndex: "",
-            render: (item: User) => (
+            render: () => (
                 <Space>
                     <Button icon={<BiTrash size={20} />} danger type="text" />
                 </Space>

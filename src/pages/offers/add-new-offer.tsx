@@ -1,44 +1,64 @@
 /* eslint-disable @next/next/no-img-element */
 import { ImagePicker } from "@/components";
+import { collectionNames } from "@/constants/collectionNames";
 import { fs } from "@/firebase/firebaseConfig";
 import { generatorRandomText } from "@/utils/generatorRandomText";
 import { HandleFile } from "@/utils/handleFile";
-import { Button, Card, Form, Input } from "antd";
+import { Button, Card, DatePicker, Form, Input } from "antd";
+import dayjs from "dayjs";
 import { addDoc, collection } from "firebase/firestore";
 import React, { ChangeEvent, useEffect, useState } from "react";
 
+interface FormData {
+    title: string;
+    startAt: string;
+    description?: string;
+    endAt: string;
+    percent: string;
+    code: string;
+}
 const AddNewOffer = () => {
-    const [files, setFiles] = useState<any>("");
+    const [files, setFiles] = useState<FileList>();
     const [isLoading, setIsLoading] = useState(false);
-    const [form] = Form.useForm();
+    const [form] = Form.useForm<FormData>();
     useEffect(() => {
         form.setFieldsValue({
             code: generatorRandomText(),
         });
     }, [form]);
-    const addNewOffer = async (values: any) => {
-        const data: any = {};
-        for (const i in values) {
-            if (Object.prototype.hasOwnProperty.call(values, i)) {
-                const element = values[i];
-                data[i] = element ?? "";
-            }
-        }
+    const addNewOffer = async (values: FormData) => {
+        const newData: FormData = {
+            ...values,
+            description: values.description ?? "",
+            startAt: dayjs(values.startAt).toISOString(),
+            endAt: dayjs(values.endAt).toISOString(),
+        };
         setIsLoading(true);
         try {
-            const snap = await addDoc(collection(fs, "offers"), data);
-
+            const snap = await addDoc(
+                collection(fs, collectionNames.offers),
+                newData
+            );
             if (files) {
-                HandleFile.HandleFiles(files, snap.id, "offers");
+                HandleFile.handleFiles({
+                    files,
+                    id: snap.id,
+                    collectionName: collectionNames.offers,
+                });
             }
+            form.resetFields();
+            window.history.back();
             setIsLoading(false);
         } catch (error) {
             setIsLoading(false);
             console.log("error add new offer", error);
         }
     };
-    const handleSelectedFile = (files: ChangeEvent<HTMLInputElement>) => {
-        setFiles(files.target.files);
+    const handleSelectedFile = (event: ChangeEvent<HTMLInputElement>) => {
+        const files: FileList | null = event.target.files;
+        if (files) {
+            setFiles(files);
+        }
     };
     return (
         <div>
@@ -68,23 +88,62 @@ const AddNewOffer = () => {
                             allowClear
                         />
                     </Form.Item>
+                    <div className="row">
+                        <div className="col">
+                            <Form.Item
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: "Please select start at",
+                                    },
+                                ]}
+                                name={"startAt"}
+                                initialValue={dayjs(new Date())}
+                                label="Start at"
+                            >
+                                <DatePicker
+                                    style={{ width: "100%" }}
+                                    format={"DD/MM/YYYY"}
+                                />
+                            </Form.Item>
+                        </div>
+                        <div className="col">
+                            <Form.Item
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: "Please select end at",
+                                    },
+                                ]}
+                                name={"endAt"}
+                                label="End at"
+                            >
+                                <DatePicker
+                                    style={{ width: "100%" }}
+                                    format={"DD/MM/YYYY"}
+                                />
+                            </Form.Item>
+                        </div>
+                    </div>
+                    <Form.Item
+                        rules={[
+                            {
+                                required: true,
+                                message: "Please enter percent",
+                            },
+                        ]}
+                        name={"percent"}
+                        label="Percent"
+                    >
+                        <Input type="number" placeholder="percent" allowClear />
+                    </Form.Item>
                     <Form.Item name={"code"} label="Code">
                         <Input disabled readOnly placeholder="Code" />
                     </Form.Item>
                 </Form>
-                {files.length > 0 && (
-                    <div>
-                        <img
-                            src={URL.createObjectURL(files[0])}
-                            alt=""
-                            style={{
-                                width: 200,
-                                height: "auto",
-                            }}
-                        />
-                    </div>
-                )}
+
                 <ImagePicker
+                    files={files}
                     multiple
                     loading={isLoading}
                     onSelected={handleSelectedFile}
