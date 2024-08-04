@@ -11,9 +11,9 @@ import React, { ChangeEvent, useEffect, useState } from "react";
 
 interface FormData {
     title: string;
-    startAt: string;
+    startAt: string | number;
     description?: string;
-    endAt: string;
+    endAt: string | number;
     percent: string;
     code: string;
 }
@@ -30,8 +30,8 @@ const AddNewOffer = () => {
         const newData: FormData = {
             ...values,
             description: values.description ?? "",
-            startAt: dayjs(values.startAt).toISOString(),
-            endAt: dayjs(values.endAt).toISOString(),
+            startAt: dayjs(values.startAt).valueOf(),
+            endAt: dayjs(values.endAt).valueOf(),
         };
         setIsLoading(true);
         try {

@@ -53,13 +53,13 @@ const Offers = () => {
             key: "START_AT",
             dataIndex: "startAt",
             title: "Start at",
-            render: (time: string) => dayjs(time).format("DD-MM-YYYY HH:mm:ss"),
+            render: (time: number) => dayjs(time).format("DD-MM-YYYY HH:mm:ss"),
         },
         {
             key: "END_AT",
             dataIndex: "endAt",
             title: "End at",
-            render: (time: string) => dayjs(time).format("DD-MM-YYYY HH:mm:ss"),
+            render: (time: number) => dayjs(time).format("DD-MM-YYYY HH:mm:ss"),
         },
         {
             key: "CODE",
