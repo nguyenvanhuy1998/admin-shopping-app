@@ -90,6 +90,7 @@ export class HandleFile {
                 files: arrayUnion({
                     path,
                     url,
+                    updateAt: Date.now(),
                 }),
             });
         } catch (error) {

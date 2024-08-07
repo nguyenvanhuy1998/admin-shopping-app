@@ -1,3 +1,4 @@
+import { ProductFilled } from "@ant-design/icons";
 import { Layout, MenuProps, Menu } from "antd";
 import Link from "next/link";
 import React from "react";
@@ -19,6 +20,11 @@ const items: MenuItem[] = [
         key: "offers",
         label: <Link href={"/offers"}>Offers</Link>,
         icon: <BiSolidOffer />,
+    },
+    {
+        key: "products",
+        label: <Link href={"/products"}>Products</Link>,
+        icon: <ProductFilled />,
     },
 ];
 const SiderComponent = () => {
