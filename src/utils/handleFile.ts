@@ -22,7 +22,7 @@ interface FileHandle {
     collectionName: string;
 }
 export class HandleFile {
-    static handleFiles = ({ files, id, collectionName }: FileHandle) => {
+    static handleFiles = async ({ files, id, collectionName }: FileHandle) => {
         const newFiles: File[] = [];
         for (const i in files) {
             if (Object.prototype.hasOwnProperty.call(files, i)) {
@@ -34,7 +34,7 @@ export class HandleFile {
         }
         newFiles.forEach(async (file) => {
             const newFile = await handleResize(file);
-            this.uploadToStore({
+            await this.uploadToStore({
                 file: newFile,
                 id,
                 collectionName,
@@ -61,7 +61,7 @@ export class HandleFile {
                 // get url from storage
                 const url = await getDownloadURL(storageRef);
                 // Save url and path to firestore database
-                this.SaveURLToFireStoreDB({
+                await this.SaveURLToFireStoreDB({
                     url,
                     path,
                     id,

@@ -12,4 +12,5 @@ export interface Offer {
 export interface File {
     path: string;
     url: string;
+    updateAt: number;
 }

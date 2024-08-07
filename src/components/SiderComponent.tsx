@@ -1,29 +1,35 @@
+import { collectionNames } from "@/constants";
 import { ProductFilled } from "@ant-design/icons";
 import { Layout, MenuProps, Menu } from "antd";
 import Link from "next/link";
 import React from "react";
-import { BiHome, BiSolidOffer, BiUser } from "react-icons/bi";
+import { BiCategory, BiHome, BiSolidOffer, BiUser } from "react-icons/bi";
 const { Sider } = Layout;
 type MenuItem = Required<MenuProps>["items"][number];
 const items: MenuItem[] = [
     {
-        key: "home",
+        key: collectionNames.home,
         label: <Link href={"/"}>Home</Link>,
         icon: <BiHome />,
     },
     {
-        key: "users",
-        label: <Link href={"/users"}>Users</Link>,
+        key: collectionNames.users,
+        label: <Link href={`/${collectionNames.users}`}>Users</Link>,
         icon: <BiUser />,
     },
     {
-        key: "offers",
-        label: <Link href={"/offers"}>Offers</Link>,
+        key: collectionNames.offers,
+        label: <Link href={`/${collectionNames.offers}`}>Offers</Link>,
         icon: <BiSolidOffer />,
     },
     {
-        key: "products",
-        label: <Link href={"/products"}>Products</Link>,
+        key: collectionNames.categories,
+        label: <Link href={`/${collectionNames.categories}`}>Categories</Link>,
+        icon: <BiCategory />,
+    },
+    {
+        key: collectionNames.products,
+        label: <Link href={`/${collectionNames.products}`}>Products</Link>,
         icon: <ProductFilled />,
     },
 ];

@@ -144,7 +144,6 @@ const AddNewOffer = () => {
 
                 <ImagePicker
                     files={files}
-                    multiple
                     loading={isLoading}
                     onSelected={handleSelectedFile}
                 />
