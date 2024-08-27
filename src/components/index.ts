@@ -1,5 +1,5 @@
 import SiderComponent from "./SiderComponent";
-import ImagePicker from "./ImagePicker";
 import AvatarComponent from "./AvatarComponent";
 import HeadComponent from "./HeadComponent";
+import ImagePicker from "./ImagePicker";
 export { SiderComponent, ImagePicker, AvatarComponent, HeadComponent };

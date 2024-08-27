@@ -1,62 +1,49 @@
-/* eslint-disable @next/next/no-img-element */
 import { Button } from "antd";
-import React, { ChangeEvent, useRef } from "react";
+import { ChangeEvent, useRef } from "react";
 import { BiUpload } from "react-icons/bi";
-interface Props {
-    files?: FileList;
-    onSelected: (files: ChangeEvent<HTMLInputElement>) => void;
+
+type Props = {
+    loading?: boolean;
     multiple?: boolean;
     accept?: string;
-    loading?: boolean;
-}
+    onSelected: (files: FileList) => void;
+};
+
 const ImagePicker = ({
-    onSelected,
-    multiple,
-    accept,
     loading,
-    files,
+    multiple,
+    accept = "image/*",
+    onSelected,
 }: Props) => {
     const fileRef = useRef<HTMLInputElement>(null);
+    const handleUploadFile = () => {
+        fileRef.current && fileRef.current.click();
+    };
+    const handleChangeFile = (value: ChangeEvent<HTMLInputElement>) => {
+        onSelected(value.target.files as FileList);
+    };
     return (
-        <>
-            {files && files.length > 0 && (
-                <div className="row">
-                    {Array.from(files).map((file, index) => (
-                        <div key={index} className="col-6">
-                            <img
-                                src={URL.createObjectURL(file)}
-                                alt="preview"
-                                style={{ width: "100%" }}
-                            />
-                        </div>
-                    ))}
-                </div>
-            )}
+        <div>
             <Button
                 loading={loading}
                 className="mt-2"
-                onClick={() => {
-                    if (fileRef.current) {
-                        fileRef.current.click();
-                    }
-                }}
                 icon={<BiUpload size={18} />}
+                onClick={handleUploadFile}
             >
                 Upload
             </Button>
             <div className="d-none">
                 <input
-                    onChange={onSelected}
-                    ref={fileRef}
                     type="file"
+                    ref={fileRef}
                     multiple={multiple}
-                    accept={accept ?? "image/*"}
+                    onChange={handleChangeFile}
+                    accept={accept}
                     name=""
                     id=""
                 />
             </div>
-        </>
+        </div>
     );
 };
-
 export default ImagePicker;
