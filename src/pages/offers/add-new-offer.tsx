@@ -1,30 +1,60 @@
 /* eslint-disable @next/next/no-img-element */
 
-import { generatorRandomText } from "@/utils";
+import { collectionNames } from "@/constants";
+import { fs } from "@/firebase";
+import { Offer } from "@/models";
+import { generatorRandomText, HandleFile } from "@/utils";
 import { PlusOutlined } from "@ant-design/icons";
-import { Button, Card, DatePicker, Form, FormProps, Input, Upload } from "antd";
+import { Button, Card, DatePicker, Form, Input, Upload } from "antd";
 import dayjs from "dayjs";
+import { addDoc, collection } from "firebase/firestore";
+import { omit } from "lodash";
 import { useState } from "react";
 
-interface FieldType {
-    title: string;
-    description?: string;
-    startDate: string;
-    endDate: string;
-    percent: string;
-    code: string;
-    fileList?: [];
-}
+type FormData = Omit<Offer, "id">;
 const AddNewOffer = () => {
+    const [form] = Form.useForm<FormData>();
     const [isLoading, setIsLoading] = useState(false);
-    const handleAddNewOffer: FormProps<FieldType>["onFinish"] = (values) => {
-        console.log("Success", values);
-    };
     const normFile = (e: any) => {
         if (Array.isArray(e)) {
             return e;
         }
         return e?.fileList;
+    };
+    const handleAddNewOffer = (values: FormData) => {
+        const formatData: FormData = {
+            ...values,
+            description: values.description ?? "",
+            startDate: dayjs(values.startDate).valueOf(),
+            endDate: dayjs(values.endDate).valueOf(),
+            files: values.files ?? "",
+        };
+        onAddNewOfferToFirebase(formatData);
+    };
+    const onAddNewOfferToFirebase = async (data: FormData) => {
+        setIsLoading(true);
+        try {
+            const snap = await addDoc(
+                collection(fs, collectionNames.offers),
+                omit(data, "files")
+            );
+            handleFilesToFirebase(data, snap);
+        } catch (error) {
+            console.log(error);
+            setIsLoading(false);
+        }
+    };
+    const handleFilesToFirebase = (data: FormData, snap: any) => {
+        if (data.files) {
+            HandleFile.handleFiles({
+                files: data.files,
+                id: snap.id,
+                collectionName: collectionNames.offers,
+            });
+        }
+        form.resetFields();
+        window.history.back();
+        setIsLoading(false);
     };
 
     return (
@@ -33,15 +63,13 @@ const AddNewOffer = () => {
                 <Form
                     disabled={isLoading}
                     layout="vertical"
-                    name="offer"
+                    form={form}
                     initialValues={{
-                        description: "",
-                        fileList: [],
                         code: generatorRandomText(),
                     }}
                     onFinish={handleAddNewOffer}
                 >
-                    <Form.Item<FieldType>
+                    <Form.Item
                         label="Title"
                         name={"title"}
                         rules={[
@@ -53,14 +81,11 @@ const AddNewOffer = () => {
                     >
                         <Input allowClear />
                     </Form.Item>
-                    <Form.Item<FieldType>
-                        label="Description"
-                        name={"description"}
-                    >
+                    <Form.Item label="Description" name={"description"}>
                         <Input.TextArea rows={2} allowClear />
                     </Form.Item>
 
-                    <Form.Item<FieldType>
+                    <Form.Item
                         label="Start date"
                         name={"startDate"}
                         initialValue={dayjs(new Date())}
@@ -79,7 +104,7 @@ const AddNewOffer = () => {
                         />
                     </Form.Item>
 
-                    <Form.Item<FieldType>
+                    <Form.Item
                         label="End date"
                         name={"endDate"}
                         rules={[
@@ -96,7 +121,7 @@ const AddNewOffer = () => {
                             format={"DD/MM/YYYY"}
                         />
                     </Form.Item>
-                    <Form.Item<FieldType>
+                    <Form.Item
                         label="Percent"
                         name={"percent"}
                         rules={[
@@ -108,7 +133,7 @@ const AddNewOffer = () => {
                     >
                         <Input type="number" />
                     </Form.Item>
-                    <Form.Item<FieldType>
+                    <Form.Item
                         label="Code"
                         name={"code"}
                         rules={[
@@ -121,9 +146,9 @@ const AddNewOffer = () => {
                         <Input allowClear />
                     </Form.Item>
 
-                    <Form.Item<FieldType>
+                    <Form.Item
                         label="Upload"
-                        name={"fileList"}
+                        name={"files"}
                         valuePropName={"fileList"}
                         getValueFromEvent={normFile}
                     >
@@ -140,7 +165,12 @@ const AddNewOffer = () => {
 
                     <Form.Item>
                         <div className="text-right">
-                            <Button type="primary" htmlType="submit">
+                            <Button
+                                loading={isLoading}
+                                type="primary"
+                                htmlType="submit"
+                                onClick={() => form.submit()}
+                            >
                                 Submit
                             </Button>
                         </div>

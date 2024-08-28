@@ -4,13 +4,7 @@ export interface Offer {
     title: string;
     description?: string;
     percent: string;
-    files?: File[];
-    startAt: string;
-    endAt: string;
-}
-
-export interface File {
-    path: string;
-    url: string;
-    updateAt: number;
+    files?: any;
+    startDate: string | number;
+    endDate: string | number;
 }

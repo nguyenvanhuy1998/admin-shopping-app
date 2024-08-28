@@ -14,28 +14,18 @@ import {
 } from "firebase/storage";
 import { replaceName } from "./replaceName";
 import { handleResize } from "./resizeImage";
-import { File as FileModel } from "@/models";
 
 interface FileHandle {
-    files: FileList;
+    files: any;
     id: string;
     collectionName: string;
 }
 export class HandleFile {
     static handleFiles = async ({ files, id, collectionName }: FileHandle) => {
-        const newFiles: File[] = [];
-        for (const i in files) {
-            if (Object.prototype.hasOwnProperty.call(files, i)) {
-                const element = files[i];
-                if (element.size && element.size > 0) {
-                    newFiles.push(element);
-                }
-            }
-        }
-        newFiles.forEach(async (file) => {
-            const newFile = await handleResize(file);
+        files.forEach(async (file: any) => {
+            const resizeFile = await handleResize(file.originFileObj);
             await this.uploadToStore({
-                file: newFile,
+                file: resizeFile,
                 id,
                 collectionName,
             });
@@ -46,7 +36,7 @@ export class HandleFile {
         id,
         collectionName,
     }: {
-        file: File;
+        file: any;
         id: string;
         collectionName: string;
     }) => {
@@ -56,6 +46,7 @@ export class HandleFile {
 
         //  Upload file to STORAGE
         const res = await uploadBytes(storageRef, file);
+        console.log(res);
         if (res) {
             if (res.metadata.size === file.size) {
                 // get url from storage
