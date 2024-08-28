@@ -91,7 +91,7 @@ export class HandleFile {
     static removeFile = async (
         collectionName: string,
         id: string,
-        file: FileModel
+        file: any
     ) => {
         try {
             const snap = await getDoc(doc(fs, `${collectionName}/${id}`));

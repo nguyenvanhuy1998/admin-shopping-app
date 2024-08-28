@@ -15,10 +15,10 @@ const { confirm } = Modal;
 const Offers = () => {
     const router = useRouter();
     const [offers, setOffers] = useState<Offer[]>([]);
+
     useEffect(() => {
         onSnapshot(collection(fs, collectionNames.offers), (snap) => {
             if (snap.empty) {
-                console.log("Data not found");
                 setOffers([]);
             } else {
                 const items: Offer[] = [];
@@ -28,11 +28,26 @@ const Offers = () => {
                         ...item.data(),
                     });
                 });
-
                 setOffers(items);
             }
         });
     }, []);
+
+    const handleDeleteOffer = async (item: Offer) => {
+        if (item.files && item.files.length > 0) {
+            item.files.forEach(
+                async (file: any) =>
+                    await HandleFile.removeFile(
+                        collectionNames.offers,
+                        item.id,
+                        file
+                    )
+            );
+        } else {
+            await deleteDoc(doc(fs, `${collectionNames.offers}/${item.id}`));
+        }
+    };
+
     const columns: ColumnProps<Offer>[] = [
         {
             key: "TITLE",
@@ -50,15 +65,15 @@ const Offers = () => {
             title: "Percent (%)",
         },
         {
-            key: "START_AT",
-            dataIndex: "startAt",
-            title: "Start at",
+            key: "START_DATE",
+            dataIndex: "startDate",
+            title: "Start date",
             render: (time: number) => dayjs(time).format("DD-MM-YYYY HH:mm:ss"),
         },
         {
-            key: "END_AT",
-            dataIndex: "endAt",
-            title: "End at",
+            key: "END_DATE",
+            dataIndex: "endDate",
+            title: "End date",
             render: (time: number) => dayjs(time).format("DD-MM-YYYY HH:mm:ss"),
         },
         {
@@ -67,9 +82,9 @@ const Offers = () => {
             title: "Code",
         },
         {
-            key: "IMAGE_URL",
+            key: "IMAGE",
             dataIndex: "",
-            title: "Avatar",
+            title: "Image",
             render: (item: Offer) => {
                 if (item.files) {
                     return <AvatarComponent imageUrl={item.files[0].url} />;
@@ -101,20 +116,6 @@ const Offers = () => {
             },
         },
     ];
-    const handleDeleteOffer = async (item: Offer) => {
-        if (item.files && item.files.length > 0) {
-            item.files.forEach(
-                async (file) =>
-                    await HandleFile.removeFile(
-                        collectionNames.offers,
-                        item.id,
-                        file
-                    )
-            );
-        } else {
-            await deleteDoc(doc(fs, `${collectionNames.offers}/${item.id}`));
-        }
-    };
     return (
         <>
             <HeadComponent
