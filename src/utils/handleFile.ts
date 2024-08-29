@@ -14,6 +14,7 @@ import {
 } from "firebase/storage";
 import { replaceName } from "./replaceName";
 import { handleResize } from "./resizeImage";
+import { File } from "@/models";
 
 interface FileHandle {
     files: any;
@@ -91,7 +92,7 @@ export class HandleFile {
     static removeFile = async (
         collectionName: string,
         id: string,
-        file: any
+        file: File
     ) => {
         try {
             const snap = await getDoc(doc(fs, `${collectionName}/${id}`));

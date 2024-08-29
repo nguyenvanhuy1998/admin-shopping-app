@@ -75,7 +75,7 @@ const AddNewCategory = () => {
                         rules={[
                             {
                                 required: true,
-                                message: "Please input the title offer",
+                                message: "Please input the title category",
                             },
                         ]}
                     >

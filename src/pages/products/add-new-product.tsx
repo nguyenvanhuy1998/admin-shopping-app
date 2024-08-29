@@ -1,51 +1,100 @@
-/* eslint-disable jsx-a11y/alt-text */
-import { HeadComponent, ImagePicker } from "@/components";
+import { HeadComponent } from "@/components";
 import { collectionNames } from "@/constants";
 import { fs } from "@/firebase";
-import { Button, Card, Form, Image, Input, Select } from "antd";
-import { collection, onSnapshot } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { Category } from "@/models";
+import { HandleFile } from "@/utils";
+import { PlusOutlined } from "@ant-design/icons";
+import { Button, Card, Form, Input, message, Select, Upload } from "antd";
+import { addDoc, collection, onSnapshot } from "firebase/firestore";
+import { omit } from "lodash";
+import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
 import { BiAddToQueue } from "react-icons/bi";
-
-interface CategorySelect {
-    label: string;
-    value: string;
-}
-export interface FormDataProduct {
+interface FormData {
     title: string;
     type: string;
     categories: string[];
-    description?: string;
+    description: string;
     price: string;
-    files?: FileList;
+    files?: any;
+}
+interface SelectCategory {
+    label: string;
+    value: string;
 }
 const AddNewProduct = () => {
+    const router = useRouter();
+    const [form] = Form.useForm<FormData>();
     const [isLoading, setIsLoading] = useState(false);
-    const [categories, setCategories] = useState<CategorySelect[]>([]);
-    const [files, setFiles] = useState<FileList>();
+    const [optionsCategory, setOptionsCategory] = useState<SelectCategory[]>(
+        []
+    );
 
-    const [form] = Form.useForm<FormDataProduct>();
     useEffect(() => {
-        getCategories();
+        getCategoriesFromFirestore();
     }, []);
 
-    const getCategories = () => {
+    const normFile = (e: any) => {
+        if (Array.isArray(e)) {
+            return e;
+        }
+        return e?.fileList;
+    };
+    const handleAddNewProduct = (values: FormData) => {
+        const formatData: FormData = {
+            ...values,
+            description: values.description ?? "",
+
+            files: values.files ?? "",
+        };
+        onAddNewProductToFireStore(formatData);
+    };
+    const onAddNewProductToFireStore = async (data: FormData) => {
+        setIsLoading(true);
+        try {
+            const newData = omit(data, "files");
+            const snap = await addDoc(
+                collection(fs, collectionNames.products),
+                {
+                    ...newData,
+                    createdAt: Date.now(),
+                    rate: 0,
+                }
+            );
+            handleFilesToFirebase(data, snap);
+        } catch (error: any) {
+            message.error(error.message);
+            setIsLoading(false);
+        }
+    };
+    const handleFilesToFirebase = (data: FormData, snap: any) => {
+        if (data.files && snap) {
+            HandleFile.handleFiles({
+                files: data.files,
+                id: snap.id,
+                collectionName: collectionNames.products,
+            });
+        }
+        setIsLoading(false);
+        window.history.back();
+        form.resetFields();
+    };
+    const getCategoriesFromFirestore = () => {
         onSnapshot(collection(fs, collectionNames.categories), (snap) => {
             if (snap.empty) {
                 console.log("Categories not found");
             } else {
-                const newCategories: CategorySelect[] = [];
+                const options: SelectCategory[] = [];
                 snap.forEach((item: any) => {
-                    newCategories.push({
+                    options.push({
                         value: item.id,
                         label: item.data().title,
                     });
                 });
-                setCategories(newCategories);
+                setOptionsCategory(options);
             }
         });
     };
-    const handleAddNewProduct = (values: FormDataProduct) => {};
 
     return (
         <div>
@@ -55,15 +104,17 @@ const AddNewProduct = () => {
                 extra={
                     <Button
                         type="primary"
+                        onClick={() =>
+                            router.push("/categories/add-new-category")
+                        }
                         icon={<BiAddToQueue size={22} />}
-                        onClick={() => {}}
                     >
                         Add new category
                     </Button>
                 }
             />
-            <div className="col-md-8">
-                <Card title="Form add new product">
+            <div className="col-md-8 offset-md-2">
+                <Card>
                     <Form
                         disabled={isLoading}
                         size="large"
@@ -72,32 +123,28 @@ const AddNewProduct = () => {
                         onFinish={handleAddNewProduct}
                     >
                         <Form.Item
-                            name={"title"}
                             label="Title"
+                            name={"title"}
                             rules={[
                                 {
                                     required: true,
-                                    message: "Please enter a title",
+                                    message: "Please input the title product",
                                 },
                             ]}
                         >
-                            <Input
-                                placeholder="Enter title"
-                                maxLength={150}
-                                allowClear
-                            />
+                            <Input allowClear maxLength={150} />
                         </Form.Item>
                         <Form.Item
-                            name={"type"}
                             label="Type"
+                            name={"type"}
                             rules={[
                                 {
                                     required: true,
-                                    message: "Please enter a type",
+                                    message: "Please input the type product",
                                 },
                             ]}
                         >
-                            <Input placeholder="Enter type" allowClear />
+                            <Input allowClear />
                         </Form.Item>
                         <Form.Item
                             name={"categories"}
@@ -105,21 +152,14 @@ const AddNewProduct = () => {
                             rules={[
                                 {
                                     required: true,
-                                    message: "Please select a category",
+                                    message: "Please select category",
                                 },
                             ]}
                         >
-                            <Select
-                                placeholder="Select category"
-                                mode="multiple"
-                                options={categories}
-                            />
+                            <Select mode="multiple" options={optionsCategory} />
                         </Form.Item>
-                        <Form.Item name={"description"} label="Description">
-                            <Input.TextArea
-                                rows={3}
-                                placeholder="Enter description"
-                            />
+                        <Form.Item label="Description" name={"description"}>
+                            <Input.TextArea rows={3} allowClear />
                         </Form.Item>
                         <Form.Item
                             name={"price"}
@@ -127,29 +167,41 @@ const AddNewProduct = () => {
                             rules={[
                                 {
                                     required: true,
-                                    message: "Please enter a price",
+                                    message: "Please input price",
                                 },
                             ]}
                         >
-                            <Input type="number" placeholder="Enter price" />
+                            <Input type="number" />
+                        </Form.Item>
+                        <Form.Item
+                            label="Upload"
+                            name={"files"}
+                            valuePropName={"fileList"}
+                            getValueFromEvent={normFile}
+                        >
+                            <Upload listType="picture-card">
+                                <button
+                                    style={{ border: 0, background: "none" }}
+                                    type="button"
+                                >
+                                    <PlusOutlined />
+                                    <div style={{ marginTop: 8 }}>Upload</div>
+                                </button>
+                            </Upload>
                         </Form.Item>
 
-                        <ImagePicker
-                            files={files}
-                            loading={isLoading}
-                            onSelected={(values) =>
-                                setFiles(values.target.files as FileList)
-                            }
-                        />
-                        <div className="mt-3 text-right">
-                            <Button
-                                loading={isLoading}
-                                onClick={() => form.submit()}
-                                type="primary"
-                            >
-                                Publish
-                            </Button>
-                        </div>
+                        <Form.Item>
+                            <div className="text-right">
+                                <Button
+                                    loading={isLoading}
+                                    type="primary"
+                                    htmlType="submit"
+                                    onClick={() => form.submit()}
+                                >
+                                    Submit
+                                </Button>
+                            </div>
+                        </Form.Item>
                     </Form>
                 </Card>
             </div>

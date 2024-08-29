@@ -1,3 +1,5 @@
+import { File } from "./product";
+
 export interface Category {
     id: string;
     files?: any;
