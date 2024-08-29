@@ -1,3 +1,4 @@
+import { collectionNames } from "@/constants";
 import { fs, storage } from "@/firebase/firebaseConfig";
 import {
     addDoc,
@@ -17,7 +18,6 @@ import {
 import { replaceName } from "./replaceName";
 import { handleResize } from "./resizeImage";
 import { File } from "@/models";
-import { collectionNames } from "@/constants";
 
 interface FileHandle {
     files: any;
@@ -89,43 +89,35 @@ export class HandleFile {
             const fileId = snap.id;
             if (fileId) {
                 await updateDoc(doc(fs, `${collectionName}/${id}`), {
-                    files: arrayUnion(fileId),
+                    files: arrayUnion({
+                        id: fileId,
+                        path,
+                        url,
+                        createdAt: Date.now(),
+                        updateAt: Date.now(),
+                    }),
                 });
             }
         } catch (error) {
             console.log("Save URL to firestore database error", error);
         }
     };
-    static removeFile = async (
-        collectionName: string,
-        id: string,
-        file: File
-    ) => {
+    static removeFile = async (id: string) => {
         try {
-            const snap = await getDoc(doc(fs, `${collectionName}/${id}`));
+            const snap = await getDoc(
+                doc(fs, `${collectionNames.files}/${id}`)
+            );
             if (snap.exists()) {
-                const existsStorage = await HandleFile.checkPathExists(
-                    file.path
-                );
-                if (existsStorage) {
-                    await deleteObject(ref(storage, `${file.path}`));
+                const { path } = snap.data();
+                if (path) {
+                    await deleteObject(ref(storage, `${path}`));
                 }
-                await deleteDoc(doc(fs, `${collectionName}/${id}`));
+                await deleteDoc(doc(fs, `${collectionNames.files}/${id}`));
+            } else {
+                console.log("file does not exist");
             }
         } catch (error) {
             console.log("remove file error", error);
         }
     };
-    static async checkPathExists(path: string): Promise<boolean> {
-        const storageRef = ref(storage, path);
-        try {
-            await getDownloadURL(storageRef);
-            return true;
-        } catch (error: any) {
-            if (error.code === "storage/object-not-found") {
-                return false;
-            }
-            throw error;
-        }
-    }
 }

@@ -1,7 +1,7 @@
 import { AvatarComponent, HeadComponent } from "@/components";
 import { collectionNames } from "@/constants/collectionNames";
 import { fs } from "@/firebase/firebaseConfig";
-import { Offer } from "@/models";
+import { File, Offer } from "@/models";
 import { HandleFile } from "@/utils/handleFile";
 import { Button, Modal, Space, Table } from "antd";
 import { ColumnProps } from "antd/es/table";
@@ -35,18 +35,13 @@ const Offers = () => {
     }, []);
 
     const handleDeleteOffer = async (item: Offer) => {
-        if (item.files && item.files.length > 0) {
-            item.files.forEach(
-                async (file: any) =>
-                    await HandleFile.removeFile(
-                        collectionNames.offers,
-                        item.id,
-                        file
-                    )
+        const { files } = item;
+        if (files && files.length > 0) {
+            files.forEach(
+                async (file: File) => await HandleFile.removeFile(file.id)
             );
-        } else {
-            await deleteDoc(doc(fs, `${collectionNames.offers}/${item.id}`));
         }
+        await deleteDoc(doc(fs, `${collectionNames.offers}/${item.id}`));
     };
 
     const columns: ColumnProps<Offer>[] = [
@@ -86,9 +81,9 @@ const Offers = () => {
             key: "IMAGE",
             dataIndex: "files",
             title: "Image",
-            render: (ids: string[]) => {
-                if (ids.length > 0) {
-                    return <AvatarComponent id={ids[0]} />;
+            render: (files: File[]) => {
+                if (files && files.length > 0) {
+                    return <AvatarComponent url={files[0].url} />;
                 }
                 return null;
             },
