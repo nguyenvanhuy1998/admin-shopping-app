@@ -15,6 +15,7 @@ const { confirm } = Modal;
 const Categories = () => {
     const router = useRouter();
     const [categories, setCategories] = useState<Category[]>([]);
+
     useEffect(() => {
         onSnapshot(collection(fs, collectionNames.categories), (snap) => {
             if (snap.empty) {

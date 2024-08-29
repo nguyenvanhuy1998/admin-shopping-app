@@ -26,9 +26,14 @@ const AddNewCategory = () => {
     const onAddNewCategoryToFirebase = async (data: FormData) => {
         setIsLoading(true);
         try {
+            const newData = omit(data, "files");
             const snap = await addDoc(
                 collection(fs, collectionNames.categories),
-                omit(data, "files")
+                {
+                    ...newData,
+                    createdAt: Date.now(),
+                    updatedAt: Date.now(),
+                }
             );
             handleFilesToFirebase(data, snap);
         } catch (error) {
