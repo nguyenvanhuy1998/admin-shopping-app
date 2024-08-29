@@ -1,34 +1,20 @@
 import { AvatarComponent, HeadComponent } from "@/components";
 import { collectionNames } from "@/constants";
 import { fs } from "@/firebase";
-import { AddNewCategory } from "@/modals";
 import { Category } from "@/models";
 import { HandleFile } from "@/utils";
-import { Button, message, Modal, Space } from "antd";
+import { Button, Modal, Space } from "antd";
 import Table, { ColumnProps } from "antd/es/table";
 import dayjs from "dayjs";
-import {
-    addDoc,
-    collection,
-    deleteDoc,
-    doc,
-    onSnapshot,
-} from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { BiTrash } from "react-icons/bi";
 
-export interface FormCategoryData {
-    title: string;
-    files?: FileList;
-}
 const { confirm } = Modal;
 const Categories = () => {
+    const router = useRouter();
     const [categories, setCategories] = useState<Category[]>([]);
-    const [visibleModal, setVisibleModal] = useState(false);
-    const [titleCategory, setTitleCategory] = useState("");
-    const [files, setFiles] = useState<FileList>();
-    const [isLoading, setIsLoading] = useState(false);
-
     useEffect(() => {
         onSnapshot(collection(fs, collectionNames.categories), (snap) => {
             if (snap.empty) {
@@ -47,44 +33,10 @@ const Categories = () => {
         });
     }, []);
 
-    const handleAddNewCategory = () => {
-        if (!titleCategory) {
-            message.error("Missing title category");
-        } else {
-            addCategoriesToFireStore();
-        }
-    };
-    const addCategoriesToFireStore = async () => {
-        setIsLoading(true);
-        try {
-            const snap = await addDoc(
-                collection(fs, collectionNames.categories),
-                {
-                    title: titleCategory,
-                    createdAt: Date.now(),
-                    updateAt: Date.now(),
-                }
-            );
-            if (files && files.length > 0) {
-                await HandleFile.handleFiles({
-                    files,
-                    id: snap.id,
-                    collectionName: collectionNames.categories,
-                });
-            }
-            setIsLoading(false);
-            setTitleCategory("");
-            setFiles(undefined);
-            setVisibleModal(false);
-        } catch (error: any) {
-            message.error(error.message);
-            setIsLoading(false);
-        }
-    };
     const handleDeleteCategory = async (item: Category) => {
         if (item.files && item.files.length > 0) {
             item.files.forEach(
-                async (file) =>
+                async (file: any) =>
                     await HandleFile.removeFile(
                         collectionNames.categories,
                         item.id,
@@ -159,23 +111,15 @@ const Categories = () => {
                 extra={
                     <Button
                         type="primary"
-                        onClick={() => setVisibleModal(true)}
+                        onClick={() =>
+                            router.push("/categories/add-new-category")
+                        }
                     >
                         Add new
                     </Button>
                 }
             />
             <Table dataSource={categories} columns={columns} />
-            <AddNewCategory
-                visible={visibleModal}
-                setVisibleModal={setVisibleModal}
-                titleCategory={titleCategory}
-                setTitleCategory={setTitleCategory}
-                files={files}
-                setFiles={setFiles}
-                loading={isLoading}
-                onAddNewCategory={handleAddNewCategory}
-            />
         </div>
     );
 };

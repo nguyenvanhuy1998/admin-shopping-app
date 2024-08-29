@@ -1,8 +1,6 @@
-import { File } from "./offer";
-
 export interface Category {
     id: string;
-    files?: File[];
+    files?: any;
     title: string;
     createdAt: number;
     updatedAt: number;
