@@ -2,9 +2,11 @@ export interface Offer {
     id: string;
     code: string;
     title: string;
-    description?: string;
+    startDate: number;
+    endDate: number;
+    files: string[];
     percent: string;
-    files?: any;
-    startDate: string | number;
-    endDate: string | number;
+    updatedAt: number;
+    createdAt: number;
+    description: string;
 }

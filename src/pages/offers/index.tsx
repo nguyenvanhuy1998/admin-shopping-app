@@ -21,14 +21,15 @@ const Offers = () => {
             if (snap.empty) {
                 setOffers([]);
             } else {
-                const items: Offer[] = [];
+                const tempOffers: Offer[] = [];
                 snap.forEach((item: any) => {
-                    items.push({
+                    tempOffers.push({
                         id: item.id,
                         ...item.data(),
                     });
                 });
-                setOffers(items);
+                console.log(tempOffers);
+                setOffers(tempOffers);
             }
         });
     }, []);
@@ -83,11 +84,11 @@ const Offers = () => {
         },
         {
             key: "IMAGE",
-            dataIndex: "",
+            dataIndex: "files",
             title: "Image",
-            render: (item: Offer) => {
-                if (item.files) {
-                    return <AvatarComponent imageUrl={item.files[0].url} />;
+            render: (ids: string[]) => {
+                if (ids.length > 0) {
+                    return <AvatarComponent id={ids[0]} />;
                 }
                 return null;
             },

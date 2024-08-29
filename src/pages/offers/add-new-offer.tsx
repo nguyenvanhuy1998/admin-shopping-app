@@ -27,6 +27,8 @@ const AddNewOffer = () => {
             description: values.description ?? "",
             startDate: dayjs(values.startDate).valueOf(),
             endDate: dayjs(values.endDate).valueOf(),
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
             files: values.files ?? "",
         };
         onAddNewOfferToFirebase(formatData);
@@ -38,17 +40,17 @@ const AddNewOffer = () => {
                 collection(fs, collectionNames.offers),
                 omit(data, "files")
             );
-            handleFilesToFirebase(data, snap);
+            handleFilesToFirebase(data.files, snap.id);
         } catch (error) {
             console.log(error);
             setIsLoading(false);
         }
     };
-    const handleFilesToFirebase = (data: FormData, snap: any) => {
-        if (data.files) {
+    const handleFilesToFirebase = (files: any, id: string) => {
+        if (files) {
             HandleFile.handleFiles({
-                files: data.files,
-                id: snap.id,
+                files,
+                id,
                 collectionName: collectionNames.offers,
             });
         }

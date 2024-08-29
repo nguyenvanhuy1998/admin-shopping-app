@@ -1,3 +1,5 @@
+import { File } from "./file";
+
 export interface Product {
     id: string;
     price: string;
@@ -8,10 +10,4 @@ export interface Product {
     categories: string[];
     rate: number;
     createdAt: number;
-}
-
-export interface File {
-    url: string;
-    path: string;
-    updateAt: number;
 }

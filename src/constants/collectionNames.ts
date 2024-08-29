@@ -4,4 +4,5 @@ export const collectionNames = {
     offers: "offers",
     categories: "categories",
     products: "products",
+    files: "files",
 };

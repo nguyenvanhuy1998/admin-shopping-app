@@ -1,6 +1,8 @@
 import { fs, storage } from "@/firebase/firebaseConfig";
 import {
+    addDoc,
     arrayUnion,
+    collection,
     deleteDoc,
     doc,
     getDoc,
@@ -15,6 +17,7 @@ import {
 import { replaceName } from "./replaceName";
 import { handleResize } from "./resizeImage";
 import { File } from "@/models";
+import { collectionNames } from "@/constants";
 
 interface FileHandle {
     files: any;
@@ -47,7 +50,6 @@ export class HandleFile {
 
         //  Upload file to STORAGE
         const res = await uploadBytes(storageRef, file);
-        console.log(res);
         if (res) {
             if (res.metadata.size === file.size) {
                 // get url from storage
@@ -78,13 +80,18 @@ export class HandleFile {
         collectionName: string;
     }) => {
         try {
-            await updateDoc(doc(fs, `${collectionName}/${id}`), {
-                files: arrayUnion({
-                    path,
-                    url,
-                    updateAt: Date.now(),
-                }),
+            const snap = await addDoc(collection(fs, collectionNames.files), {
+                path,
+                url,
+                createdAt: Date.now(),
+                updateAt: Date.now(),
             });
+            const fileId = snap.id;
+            if (fileId) {
+                await updateDoc(doc(fs, `${collectionName}/${id}`), {
+                    files: arrayUnion(fileId),
+                });
+            }
         } catch (error) {
             console.log("Save URL to firestore database error", error);
         }
