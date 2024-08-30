@@ -4,9 +4,9 @@ export interface Offer {
     title: string;
     startDate: number;
     endDate: number;
-    files: string[];
+    files?: string[];
     percent: string;
     updatedAt: number;
     createdAt: number;
-    description: string;
+    description?: string;
 }

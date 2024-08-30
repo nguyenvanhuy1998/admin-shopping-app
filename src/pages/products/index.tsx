@@ -39,18 +39,13 @@ const Products = () => {
         });
     }, []);
     const handleDeleteProduct = async (item: Product) => {
-        if (item.files && item.files.length > 0) {
-            item.files.forEach(
-                async (file: File) =>
-                    await HandleFile.removeFile(
-                        collectionNames.products,
-                        item.id,
-                        file
-                    )
+        const { files } = item;
+        if (files && files.length > 0) {
+            files.forEach(
+                async (id: string) => await HandleFile.removeFile(id)
             );
-        } else {
-            await deleteDoc(doc(fs, `${collectionNames.products}/${item.id}`));
         }
+        await deleteDoc(doc(fs, `${collectionNames.products}/${item.id}`));
     };
     const columns: ColumnProps<Product>[] = [
         {
@@ -94,11 +89,11 @@ const Products = () => {
         },
         {
             key: "IMAGE",
-            dataIndex: "",
+            dataIndex: "files",
             title: "Image",
-            render: (item: Product) => {
-                if (item.files) {
-                    return <AvatarComponent imageUrl={item.files[0].url} />;
+            render: (ids: string[]) => {
+                if (ids && ids.length > 0) {
+                    return <AvatarComponent fileId={ids[0]} />;
                 }
                 return null;
             },
@@ -133,7 +128,7 @@ const Products = () => {
                                 }
                             />
                         </Tooltip>
-                        <Tooltip title="Add sub product">
+                        <Tooltip title="Delete product">
                             <Button
                                 type="text"
                                 danger
