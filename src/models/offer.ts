@@ -1,12 +1,10 @@
-import { File } from "./file";
-
 export interface Offer {
     id: string;
     code: string;
     title: string;
     startDate: number;
     endDate: number;
-    files: File[];
+    files: string[];
     percent: string;
     updatedAt: number;
     createdAt: number;

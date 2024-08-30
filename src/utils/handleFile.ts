@@ -89,13 +89,7 @@ export class HandleFile {
             const fileId = snap.id;
             if (fileId) {
                 await updateDoc(doc(fs, `${collectionName}/${id}`), {
-                    files: arrayUnion({
-                        id: fileId,
-                        path,
-                        url,
-                        createdAt: Date.now(),
-                        updateAt: Date.now(),
-                    }),
+                    files: arrayUnion(fileId),
                 });
             }
         } catch (error) {

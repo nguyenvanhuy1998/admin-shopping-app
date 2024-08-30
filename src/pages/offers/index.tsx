@@ -1,7 +1,7 @@
 import { AvatarComponent, HeadComponent } from "@/components";
 import { collectionNames } from "@/constants/collectionNames";
 import { fs } from "@/firebase/firebaseConfig";
-import { File, Offer } from "@/models";
+import { Offer } from "@/models";
 import { HandleFile } from "@/utils/handleFile";
 import { Button, Modal, Space, Table } from "antd";
 import { ColumnProps } from "antd/es/table";
@@ -28,7 +28,6 @@ const Offers = () => {
                         ...item.data(),
                     });
                 });
-                console.log(tempOffers);
                 setOffers(tempOffers);
             }
         });
@@ -38,7 +37,7 @@ const Offers = () => {
         const { files } = item;
         if (files && files.length > 0) {
             files.forEach(
-                async (file: File) => await HandleFile.removeFile(file.id)
+                async (id: string) => await HandleFile.removeFile(id)
             );
         }
         await deleteDoc(doc(fs, `${collectionNames.offers}/${item.id}`));
@@ -81,9 +80,9 @@ const Offers = () => {
             key: "IMAGE",
             dataIndex: "files",
             title: "Image",
-            render: (files: File[]) => {
+            render: (files: string[]) => {
                 if (files && files.length > 0) {
-                    return <AvatarComponent url={files[0].url} />;
+                    return <AvatarComponent fileId={files[0]} />;
                 }
                 return null;
             },

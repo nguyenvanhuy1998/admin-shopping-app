@@ -2,7 +2,6 @@
 
 import { collectionNames } from "@/constants";
 import { fs } from "@/firebase";
-import { Offer } from "@/models";
 import { generatorRandomText, HandleFile } from "@/utils";
 import { PlusOutlined } from "@ant-design/icons";
 import { Button, Card, DatePicker, Form, Input, Upload } from "antd";
@@ -11,7 +10,17 @@ import { addDoc, collection } from "firebase/firestore";
 import { omit } from "lodash";
 import { useState } from "react";
 
-type FormData = Omit<Offer, "id">;
+interface FormData {
+    code: string;
+    title: string;
+    startDate: number;
+    endDate: number;
+    files?: any;
+    percent: string;
+    updatedAt: number;
+    createdAt: number;
+    description?: string;
+}
 const AddNewOffer = () => {
     const [form] = Form.useForm<FormData>();
     const [isLoading, setIsLoading] = useState(false);
@@ -154,7 +163,7 @@ const AddNewOffer = () => {
                         valuePropName={"fileList"}
                         getValueFromEvent={normFile}
                     >
-                        <Upload listType="picture-card">
+                        <Upload listType="picture-card" maxCount={1}>
                             <button
                                 style={{ border: 0, background: "none" }}
                                 type="button"

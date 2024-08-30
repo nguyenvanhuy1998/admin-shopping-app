@@ -1,8 +1,7 @@
-import { collectionNames } from "@/constants";
 import { fs } from "@/firebase";
 import { Category } from "@/models";
-import { collection, doc, getDoc } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { useEffect, useState } from "react";
 
 type Props = {
     id?: string;

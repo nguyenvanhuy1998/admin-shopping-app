@@ -3,7 +3,7 @@ import { File } from "./file";
 export interface Product {
     id: string;
     price: string;
-    files: File[];
+    files: string[];
     title: string;
     type: string;
     description: string;

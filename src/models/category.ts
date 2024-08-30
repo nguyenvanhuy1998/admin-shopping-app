@@ -1,8 +1,8 @@
-import { File } from "./product";
+import { File } from "./file";
 
 export interface Category {
     id: string;
-    files?: any;
+    files: string[];
     title: string;
     createdAt: number;
     updatedAt: number;

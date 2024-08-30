@@ -1,7 +1,7 @@
 import { AvatarComponent, HeadComponent } from "@/components";
 import { collectionNames } from "@/constants";
 import { fs } from "@/firebase";
-import { Category } from "@/models";
+import { Category, File } from "@/models";
 import { HandleFile } from "@/utils";
 import { Button, Modal, Space } from "antd";
 import Table, { ColumnProps } from "antd/es/table";
@@ -19,36 +19,28 @@ const Categories = () => {
     useEffect(() => {
         onSnapshot(collection(fs, collectionNames.categories), (snap) => {
             if (snap.empty) {
-                console.log("Data not found");
                 setCategories([]);
             } else {
-                const items: Category[] = [];
+                const categoriesTemp: Category[] = [];
                 snap.forEach((item: any) => {
-                    items.push({
+                    categoriesTemp.push({
                         id: item.id,
                         ...item.data(),
                     });
                 });
-                setCategories(items);
+                setCategories(categoriesTemp);
             }
         });
     }, []);
 
     const handleDeleteCategory = async (item: Category) => {
-        if (item.files && item.files.length > 0) {
-            item.files.forEach(
-                async (file: any) =>
-                    await HandleFile.removeFile(
-                        collectionNames.categories,
-                        item.id,
-                        file
-                    )
-            );
-        } else {
-            await deleteDoc(
-                doc(fs, `${collectionNames.categories}/${item.id}`)
+        const { files } = item;
+        if (files && files.length > 0) {
+            files.forEach(
+                async (id: string) => await HandleFile.removeFile(id)
             );
         }
+        await deleteDoc(doc(fs, `${collectionNames.categories}/${item.id}`));
     };
     const columns: ColumnProps<Category>[] = [
         {
@@ -70,12 +62,12 @@ const Categories = () => {
         },
 
         {
-            key: "IMAGE_URL",
-            dataIndex: "",
-            title: "Avatar",
-            render: (item: Category) => {
-                if (item.files) {
-                    return <AvatarComponent imageUrl={item.files[0].url} />;
+            key: "IMAGE",
+            dataIndex: "files",
+            title: "Image",
+            render: (ids: string[]) => {
+                if (ids && ids.length > 0) {
+                    return <AvatarComponent fileId={ids[0]} />;
                 }
                 return null;
             },

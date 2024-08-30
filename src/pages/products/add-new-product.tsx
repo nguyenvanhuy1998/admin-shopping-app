@@ -14,9 +14,12 @@ interface FormData {
     title: string;
     type: string;
     categories: string[];
-    description: string;
+    description?: string;
     price: string;
     files?: any;
+    createdAt: number;
+    updatedAt: number;
+    rate: number;
 }
 interface SelectCategory {
     label: string;
@@ -33,52 +36,6 @@ const AddNewProduct = () => {
     useEffect(() => {
         getCategoriesFromFirestore();
     }, []);
-
-    const normFile = (e: any) => {
-        if (Array.isArray(e)) {
-            return e;
-        }
-        return e?.fileList;
-    };
-    const handleAddNewProduct = (values: FormData) => {
-        const formatData: FormData = {
-            ...values,
-            description: values.description ?? "",
-
-            files: values.files ?? "",
-        };
-        onAddNewProductToFireStore(formatData);
-    };
-    const onAddNewProductToFireStore = async (data: FormData) => {
-        setIsLoading(true);
-        try {
-            const newData = omit(data, "files");
-            const snap = await addDoc(
-                collection(fs, collectionNames.products),
-                {
-                    ...newData,
-                    createdAt: Date.now(),
-                    rate: 0,
-                }
-            );
-            handleFilesToFirebase(data, snap);
-        } catch (error: any) {
-            message.error(error.message);
-            setIsLoading(false);
-        }
-    };
-    const handleFilesToFirebase = (data: FormData, snap: any) => {
-        if (data.files && snap) {
-            HandleFile.handleFiles({
-                files: data.files,
-                id: snap.id,
-                collectionName: collectionNames.products,
-            });
-        }
-        setIsLoading(false);
-        window.history.back();
-        form.resetFields();
-    };
     const getCategoriesFromFirestore = () => {
         onSnapshot(collection(fs, collectionNames.categories), (snap) => {
             if (snap.empty) {
@@ -94,6 +51,49 @@ const AddNewProduct = () => {
                 setOptionsCategory(options);
             }
         });
+    };
+
+    const normFile = (e: any) => {
+        if (Array.isArray(e)) {
+            return e;
+        }
+        return e?.fileList;
+    };
+    const handleAddNewProduct = (values: FormData) => {
+        const formatData: FormData = {
+            ...values,
+            description: values.description ?? "",
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            rate: 0,
+            files: values.files ?? "",
+        };
+        onAddNewProductToFireStore(formatData);
+    };
+    const onAddNewProductToFireStore = async (data: FormData) => {
+        setIsLoading(true);
+        try {
+            const snap = await addDoc(
+                collection(fs, collectionNames.products),
+                omit(data, "files")
+            );
+            handleFilesToFirebase(data.files, snap.id);
+        } catch (error: any) {
+            message.error(error.message);
+            setIsLoading(false);
+        }
+    };
+    const handleFilesToFirebase = (files: any, id: string) => {
+        if (files) {
+            HandleFile.handleFiles({
+                files,
+                id,
+                collectionName: collectionNames.products,
+            });
+        }
+        setIsLoading(false);
+        window.history.back();
+        form.resetFields();
     };
 
     return (
